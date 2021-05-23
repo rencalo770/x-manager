@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/gengine-rules-manager.iml" filepath="$PROJECT_DIR$/.idea/gengine-rules-manager.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/x-manager.iml" filepath="$PROJECT_DIR$/.idea/x-manager.iml" />
     </modules>
   </component>
 </project>

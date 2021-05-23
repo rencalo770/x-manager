@@ -1,5 +1,5 @@
 {
-  "name": "gengine-rules-manager",
+  "name": "x-manager",
   "version": "0.1.0",
   "private": true,
   "dependencies": {

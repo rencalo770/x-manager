@@ -7,7 +7,7 @@ class SelectX extends React.PureComponent{
     render() {
         return(
             <div>
-                <span style={{ marginRight: 8 }}>{this.props.spanText}</span>
+                <span style={{ marginLeft: 10, marginRight: 8 }}>{this.props.spanText}</span>
                 <Select
                     style={{width:150}}
                     placeholder={this.props.placeholder}
