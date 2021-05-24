@@ -1,6 +1,5 @@
 import React from "react";
 import {Layout, Divider, Switch, Row, Col,} from 'antd';
-//import { PlusCircleOutlined } from '@ant-design/icons'
 import SelectX from "./SelectX";
 import RuleTable from "./RuleTable";
 import axios from "axios";
@@ -177,7 +176,7 @@ class RuleContent extends React.Component{
 
     render() {
         return (
-            <Content style={{ margin: '24px 16px 20px 20px', background:'white'}}>
+            <Content style={{ margin: '24px 16px 20px', background:'white'}}>
                 <div className="site-layout-background" style={{ padding: 24, minHeight: 10 }}>
                     <Row>
                         <Col>
@@ -229,13 +228,16 @@ class RuleContent extends React.Component{
                                 <Col>
                                     <ButtonX id={2} type='primary' style={{ marginRight: 10, textAlign: 'right'}} text = '新增场景'/>
                                 </Col>
+                                <Col>
+                                    <ButtonX id={3} type='primary' style={{ marginRight: 10, textAlign: 'right'}} text = '新增规则'/>
+                                </Col>
                             </Row>
 
                         </Col>
                     </Row>
 
                     <Divider/>
-                    <RuleTable rules={this.state.rules} bu={this.state.buValue} scene={this.state.sceneValue} />
+                    <RuleTable rules={this.state.rules} bid={this.state.buValue} sid={this.state.sceneValue} />
                 </div>
             </Content>
         )

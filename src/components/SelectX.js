@@ -17,7 +17,6 @@ class SelectX extends React.PureComponent{
                 >
                     {
                         this.props.selectOption.map(option =>{
-                          //  console.log("select->", this.props.selectOption)
                             return <Select.Option key={option.id} value={option.id}>{option.name}</Select.Option>
                         })
                     }

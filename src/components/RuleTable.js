@@ -1,6 +1,9 @@
 import React from "react";
-import {Button,Table} from "antd";
+import {Button, Modal, Table, Input} from "antd";
+import axios from "axios";
 const { Column } = Table;
+
+const { TextArea } = Input
 
 // eslint-disable-next-line no-extend-native
 Date.prototype.Format = function (fmt) {
@@ -22,12 +25,24 @@ Date.prototype.Format = function (fmt) {
 
 class RuleTable extends React.PureComponent {
 
-    click = (e) => {
+    state = {
+        readOnly : true,
+        isModalVisible: false,
+        record: '',
+        buttonText: ''
+    }
 
+    handleOK = (e) => {
+        //todo
+    }
+
+    handleCancel = (e) => {
+        //todo
     }
 
     render() {
         return (
+            <div>
             <Table dataSource={this.props.rules}>
                 <Column title="规则id" dataIndex="id" key="id"/>
                 <Column title="规则名称" dataIndex="name" key="name"/>
@@ -65,8 +80,13 @@ class RuleTable extends React.PureComponent {
                                            type={text === '删除' ? 'danger' : 'primary'}
                                            onClick={(e) => {
                                                if (text === '查看') {
-                                                   console.log("be ->",  this.props.bu, this.props.scene)
-                                                   //todo
+                                                   console.log("be ->",  this.props.bid, this.props.sid, record.id)
+                                                   this.setState({
+                                                       isModalVisible: true,
+                                                       readOnly: true,
+                                                       record: record,
+                                                       buttonText: text
+                                                   })
                                                }
 
                                                if (text === '修改') {
@@ -80,6 +100,17 @@ class RuleTable extends React.PureComponent {
                         })
                     )}/>
             </Table>
+            <Modal title='规则内容'
+                   visible={this.state.isModalVisible}
+                   okText="保存"
+                   cancelText="取消"
+                   onOk={this.handleOK}
+                   onCancel={this.handleCancel}>
+                {
+                    <Input.TextArea autoSize={true} readOnly={true} defaultValue={this.state.record.content}/>
+                }
+            </Modal>
+            </div>
         )
     }
 }

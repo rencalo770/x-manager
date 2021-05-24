@@ -40,9 +40,9 @@ class LayoutX extends React.Component{
                     </Sider>
                     <Layout style={{background:'lightgray'}}>
                         <Switch>
-                            <Route path="/" component={RuleContent}/>
                             <Route path='/auth' component={AuthContent}/>
                             <Route path='/config' component={ConfigContent}/>
+                            <Route path="/" component={RuleContent}/>
                         </Switch>
                     </Layout>
                 </Layout>
