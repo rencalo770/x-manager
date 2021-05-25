@@ -81,7 +81,7 @@ class RuleContent extends React.Component{
                     let respRules = []
                     for (let i = 0; i < response.data.length; i ++ ){
                         let rule = response.data[i]
-                        rule['operate'] = ['查看', '删除', '修改']
+                        rule['operate'] = ['查看', '修改', '删除']
                         rule['key'] = response.data[i].id
                         respRules[i] = rule
                     }

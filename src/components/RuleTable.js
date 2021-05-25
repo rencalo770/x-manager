@@ -1,5 +1,5 @@
 import React from "react";
-import {Button, Modal, Table, Input} from "antd";
+import {Button, Modal, Table, Input, Col, Row} from "antd";
 import axios from "axios";
 const { Column } = Table;
 
@@ -26,19 +26,30 @@ Date.prototype.Format = function (fmt) {
 class RuleTable extends React.PureComponent {
 
     state = {
-        readOnly : true,
-        isModalVisible: false,
-        record: '',
-        buttonText: ''
+        watchVisible: false,
+        watchContent: '',
+
+        changeVisible : false,
+        changeRecord: ''
     }
 
-    handleOK = (e) => {
-        //todo
+    watchCancel = (e) => {
+        this.setState({
+            watchVisible: false
+        })
     }
 
-    handleCancel = (e) => {
-        //todo
+
+    changeOk = (e) => {
+
     }
+
+    changeCancel = (e) => {
+        this.setState({
+            changeVisible: false
+        })
+    }
+
 
     render() {
         return (
@@ -74,42 +85,80 @@ class RuleTable extends React.PureComponent {
                     dataIndex='operate'
                     key='operate'
                     render={(operate, record) => (
-                        operate.map((text, id) => {
-                            return <Button style={{marginLeft: 8}}
-                                           key={id}
-                                           type={text === '删除' ? 'danger' : 'primary'}
-                                           onClick={(e) => {
-                                               if (text === '查看') {
-                                                   console.log("be ->",  this.props.bid, this.props.sid, record.id)
-                                                   this.setState({
-                                                       isModalVisible: true,
-                                                       readOnly: true,
-                                                       record: record,
-                                                       buttonText: text
-                                                   })
-                                               }
+                            operate.map((text, id) => {
+                                return <Button style={{marginLeft: 8}}
+                                        key={id}
+                                        type={text === '删除' ? 'danger' : 'primary'}
+                                        onClick={(e) => {
+                                            console.log("be ->", this.props.bid, this.props.sid, record.id, record.content)
+                                            if (text === '查看') {
+                                                this.setState({
+                                                    watchVisible: true,
+                                                    watchContent: record.content,
+                                                })
+                                            }
 
-                                               if (text === '修改') {
-                                                   //todo
-                                               }
+                                            if (text === '修改') {
+                                                this.setState({
+                                                    changeVisible: true,
+                                                    changeRecord : record
+                                                })
+                                            }
 
-                                               if (text === '删除') {
-                                                   // todo
-                                               }
-                                           }}>{text}</Button>
-                        })
+                                            if (text === '删除') {
+                                                // todo
+                                            }
+                                        }}>{text}</Button>
+                            })
                     )}/>
             </Table>
-            <Modal title='规则内容'
-                   visible={this.state.isModalVisible}
-                   okText="保存"
-                   cancelText="取消"
-                   onOk={this.handleOK}
-                   onCancel={this.handleCancel}>
-                {
-                    <Input.TextArea autoSize={true} readOnly={true} defaultValue={this.state.record.content}/>
-                }
-            </Modal>
+
+                <Modal
+                    id ='查看'
+                    title='规则内容'
+                    visible={this.state.watchVisible}
+                    onCancel={this.watchCancel}
+                    footer ={null}>
+                    {<Input.TextArea autoSize={true} readOnly={true} value={this.state.watchContent}/>}
+                </Modal>
+                <Modal
+                    id ='修改'
+                    title='规则内容'
+                    visible={this.state.changeVisible}
+                    okText="保存"
+                    cancelText="取消"
+                    onOk={this.changeOk}
+                    onCancel={this.changeCancel}
+                    width={600}
+                    maskClosable={false}
+                >
+                    <Col>
+                        <Row>
+                            <span>规则名称:</span>
+                        </Row>
+                        <Row>
+                            <Input readOnly={true} value={this.state.changeRecord.name}/>
+                        </Row>
+                        <Row>
+                            <span>规则描述:</span>
+                        </Row>
+                        <Row>
+                            <Input readOnly={false} value={this.state.changeRecord.description} onChange={(e)=>{console.log('onchange->',e) }}/>
+                        </Row>
+                        <Row>
+                            <span>规则优先级</span>
+                        </Row>
+                        <Row>
+                            <Input readOnly={false}  value={this.state.changeRecord.salience}/>
+                        </Row>
+                        <Row>
+                            <span>规则体</span>
+                        </Row>
+                        <Row>
+                            <Input.TextArea  autoSize={true} readOnly={false} value={this.state.changeRecord.content}/>
+                        </Row>
+                    </Col>
+                </Modal>
             </div>
         )
     }
