@@ -1,9 +1,7 @@
 import React from "react";
-import {Button, Modal, Table, Input, Col, Row} from "antd";
+import {Button, Modal, Table, Input, Col, Row, message} from "antd";
 import axios from "axios";
 const { Column } = Table;
-
-const { TextArea } = Input
 
 // eslint-disable-next-line no-extend-native
 Date.prototype.Format = function (fmt) {
@@ -39,9 +37,39 @@ class RuleTable extends React.PureComponent {
         })
     }
 
-
     changeOk = (e) => {
 
+        if (this.state.description === ''  || this.state.description.trim() === ''){
+            message.error('描述不能为空!')
+            return
+        }
+
+        if (!Number.isInteger(this.state.salience)){
+            message.error('规则优先级不是正整数')
+            return
+        }
+
+        if (this.state.content === '' || this.state.content.trim === ''){
+            message.error('规则体不能为空!')
+            return
+        }
+
+        //保存规则
+        axios.get('/update/rule?name=' + this.state.name
+            + '&description=' + this.state.description
+            + '&salience=' + this.state.salience
+            + '&content=' + this.state.content)
+            .then(response => {
+                if (response.status === 200) {
+                    message.success('规则保存成功!')
+                    this.setState({
+                        changeVisible: false
+                    })
+                }
+            })
+            .catch(e => {
+                message.error('更新规则失败:' + e)
+            })
     }
 
     changeCancel = (e) => {
@@ -90,7 +118,6 @@ class RuleTable extends React.PureComponent {
                                         key={id}
                                         type={text === '删除' ? 'danger' : 'primary'}
                                         onClick={(e) => {
-                                            console.log("be ->", this.props.bid, this.props.sid, record.id, record.content)
                                             if (text === '查看') {
                                                 this.setState({
                                                     watchVisible: true,
@@ -101,7 +128,10 @@ class RuleTable extends React.PureComponent {
                                             if (text === '修改') {
                                                 this.setState({
                                                     changeVisible: true,
-                                                    changeRecord : record
+                                                    name: record.name,
+                                                    description: record.description,
+                                                    salience: record.salience,
+                                                    content: record.content
                                                 })
                                             }
 
@@ -112,7 +142,6 @@ class RuleTable extends React.PureComponent {
                             })
                     )}/>
             </Table>
-
                 <Modal
                     id ='查看'
                     title='规则内容'
@@ -137,25 +166,39 @@ class RuleTable extends React.PureComponent {
                             <span>规则名称:</span>
                         </Row>
                         <Row>
-                            <Input readOnly={true} value={this.state.changeRecord.name}/>
+                            <Input readOnly={true} value={this.state.name}/>
                         </Row>
                         <Row>
-                            <span>规则描述:</span>
+                            <span style={{marginTop: 10}}>规则描述:</span>
                         </Row>
                         <Row>
-                            <Input readOnly={false} value={this.state.changeRecord.description} onChange={(e)=>{console.log('onchange->',e) }}/>
+                            <Input value={this.state.description}
+                                   onChange={(e) => {
+                                       console.log('onchange->',e.target.value)
+                                       this.setState({
+                                           description: e.target.value
+                                       })
+                                   }}/>
                         </Row>
                         <Row>
-                            <span>规则优先级</span>
+                            <span style={{marginTop: 10}}>规则优先级:</span>
                         </Row>
                         <Row>
-                            <Input readOnly={false}  value={this.state.changeRecord.salience}/>
+                            <Input value={this.state.salience} onChange={e => {
+                                this.setState({
+                                    salience: e.target.value
+                                })
+                            }}/>
                         </Row>
                         <Row>
-                            <span>规则体</span>
+                            <span style={{marginTop: 10}}>规则体:</span>
                         </Row>
                         <Row>
-                            <Input.TextArea  autoSize={true} readOnly={false} value={this.state.changeRecord.content}/>
+                            <Input.TextArea  autoSize={true} value={this.state.content} onChange={e => {
+                                 this.setState({
+                                     content: e.target.value
+                                 })
+                            }}/>
                         </Row>
                     </Col>
                 </Modal>
