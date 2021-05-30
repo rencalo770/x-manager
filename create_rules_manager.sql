@@ -7,9 +7,10 @@ use `rules_manage`;
 -- 创建部门信息表
 create table if not exists `bu_t`(
     id int primary key auto_increment comment '部门id',
-    name varchar(256) comment '部门名称'
+    name varchar(256) comment '部门名称',
     create_time timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    update_time timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
+    update_time timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+    unique key b_name(`name`) --- 防止有同名的部门
 )ENGINE=InnoDB DEFAULT CHARSET=utf8 comment='部门信息表';
 
 -- 创建场景信息表
@@ -19,8 +20,9 @@ create table if not exists `scene_t`(
     bid int comment '部门id,bu_t表的自增id; 不可为空, 场景必须依部门存在',
     eid int comment '执行模式id, 1:顺序模式,2:并发模式,3:混合模式,4:逆混合模式,5.DAG模式;每一个场景必须有对应的执行模式',
     create_time timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    update_time timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
-    key `idx_bid`(`bid`)
+    update_time timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+    key `idx_bid`(`bid`),
+    unique key b_s(`name`, `bid`)  --- 防止一个部门下有同名的场景
 )ENGINE=InnoDB DEFAULT CHARSET=utf8 comment='场景信息表';
 
 -- 创建规则信息表
@@ -38,5 +40,6 @@ create table if not exists `rules_t`(
     update_time timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
     key `idx_bid`(`bid`),
     key `idx_sid`(`sid`),
-    key `idx_status`(`status`)
+    key `idx_status`(`status`),
+    unique key b_s_r(`bid`, `sid`, `name`) --- 防止一个部门的一个场景下有同名的规则
 )ENGINE=InnoDB DEFAULT CHARSET=utf8 comment='规则明细表';

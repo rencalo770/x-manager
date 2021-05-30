@@ -1,11 +1,21 @@
 import React from "react";
 import {Layout} from 'antd';
+import {Redirect} from "react-router-dom";
+import Token from "../auth/Token";
 
 const {Content} = Layout
 
-class AuthContent extends React.Component{
+const token = new Token()
+
+class ConfigContent extends React.Component{
 
     render() {
+
+        //权限控制
+        if (!token.checkUsernameAndToken()){
+            return <Redirect to='/login'/>
+        }
+
         return(
             <Content style={{ margin: '24px 16px 20px', background:'white'}}>
                 <div className="site-layout-background" style={{ padding: 24, minHeight: 10 }}>
@@ -17,4 +27,4 @@ class AuthContent extends React.Component{
 }
 
 
-export default AuthContent
+export default ConfigContent

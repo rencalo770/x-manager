@@ -1,13 +1,17 @@
 import React from "react";
-import {Layout, Divider, Switch, Row, Col,} from 'antd';
-import SelectX from "./SelectX";
-import RuleTable from "./RuleTable";
+import {Layout, Divider, Switch, Row, Col, message} from 'antd';
+import SelectX from "../SelectX";
+import TableX from "../TableX";
 import axios from "axios";
-import emData from "../data/emData";
-import emHelper from "../data/emHelper";
-import ButtonX from "./ButtonX";
+import emData from "../../data/emData";
+import emHelper from "../../data/emHelper";
+import ButtonX from "../ButtonX";
+import {Redirect} from "react-router-dom";
+import '../auth/Token'
+import Token from "../auth/Token";
 const {Content} = Layout
 
+const token = new Token()
 
 class RuleContent extends React.Component{
 
@@ -20,10 +24,10 @@ class RuleContent extends React.Component{
                     buOption: response.data
                 })
             } else {
-                //todo
+                message.error('获取部门信息失败:', response.data)
             }
         }).catch(e =>{
-            //todo
+            message.error('获取部门信息异常:',e)
         })
     }
 
@@ -32,16 +36,15 @@ class RuleContent extends React.Component{
         axios.get('/scenes?bid='+bid)
             .then(response =>{
                 if (response.status === 200){
-                    console.log("scenesOption->", response.data)
                     this.setState({
                         scenesOption: response.data
                     })
                 }else{
-                    //todo
+                    message.error('获取部门场景信息失败:', response.data)
                 }
             })
             .catch(e=>{
-                //todo
+                message.error('获取场景信息异常:',e)
             })
     }
 
@@ -75,7 +78,6 @@ class RuleContent extends React.Component{
         let status = checked ? 1: 0 //1:在线,0:离线
         axios.get('/rules?bid='+ bid +'&sid='+sid + '&status='+status)
             .then(response=>{
-                console.log("getFixedStatusRules response->", response.data)
                 if (response.status === 200){
                     //补全数据
                     let respRules = []
@@ -93,17 +95,16 @@ class RuleContent extends React.Component{
                         switchDisabled: false
                     })
                 }else {
-                    //todo
+                    message.error('获取规则列表失败:', response.data)
                 }
             })
             .catch(e=>{
-                //todo
+                message.error('获取规则列表异常:', e)
             })
     }
 
-    //选择具体的场景,每一个场景都会固定的对应一个场景，所以选择场景时，场景上规则的执行模式也确定了
+    //选择具体的场景,每一个场景都会固定的对应一个执行模式，所以选择场景时，场景上规则的执行模式也确定了
     sceneOnSelected = (value, event) => {
-        console.log("sceneSelect-->", this.state.buValue, value, event)
 
         this.setState({
             sceneValue: event.value
@@ -113,38 +114,25 @@ class RuleContent extends React.Component{
     }
 
     //切换(某部的某场景下的规则执行模式)执行模式
-    changeExecuteModel = (bid, sid, eid) => {
-        axios.get('/change/em?bid='+ bid +'&id=' + sid + '&eid=' + eid)
+    emOnSelect = (value, event) =>{
+        axios.get('/change/em?bid='+ this.state.buValue +'&id=' + this.state.sceneValue + '&eid=' + event.value)
             .then(response => {
                 if (response.status === 200){
-                    // todo
-                    console.log("change success")
+                    message.success('改变场景的执行模式成功!')
+                    this.setState({
+                        emValue : event.children
+                    })
                 }else{
-                    // todo
+                    message.error('改变场景执行模式失败:', response.data)
                 }
             })
             .catch(e =>{
-                //todo 没有保存
-                console.log("change failed")
+                message.error('改变执行模式异常:', e)
             })
-    }
-
-
-    //todo 此处是切换选中场景的执行模式，状态需要保存至后端，并向执行的规则引擎发送切换执行模式通知
-    emOnSelect = (value, event) =>{
-        console.log("emOnSelect->", value, event)
-        //send to backend to save
-
-        this.changeExecuteModel(this.state.buValue, this.state.sceneValue, event.value)
-
-        this.setState({
-            emValue : event.children
-        })
     }
 
     // todo 切换分类
     onChange  = (e)=>{
-        console.log("Switch-->" ,e)
         this.getFixedStatusRules(this.state.buValue, this.state.sceneValue, e)
 
         this.setState({
@@ -175,6 +163,12 @@ class RuleContent extends React.Component{
     }
 
     render() {
+
+        //权限控制
+        if (!token.checkUsernameAndToken()){
+            return <Redirect to='/login'/>
+        }
+
         return (
             <Content style={{ margin: '24px 16px 20px', background:'white'}}>
                 <div className="site-layout-background" style={{ padding: 24, minHeight: 10 }}>
@@ -237,7 +231,7 @@ class RuleContent extends React.Component{
                     </Row>
 
                     <Divider/>
-                    <RuleTable rules={this.state.rules} bid={this.state.buValue} sid={this.state.sceneValue} />
+                    <TableX rules={this.state.rules} bid={this.state.buValue} sid={this.state.sceneValue} />
                 </div>
             </Content>
         )

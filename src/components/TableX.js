@@ -21,7 +21,7 @@ Date.prototype.Format = function (fmt) {
 }
 
 
-class RuleTable extends React.PureComponent {
+class TableX extends React.PureComponent {
 
     state = {
         watchVisible: false,
@@ -207,4 +207,4 @@ class RuleTable extends React.PureComponent {
     }
 }
 
-export default RuleTable
+export default TableX

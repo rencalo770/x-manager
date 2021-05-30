@@ -1,12 +1,21 @@
 import React from "react";
-import {Button, Modal, Row, Col, Input} from "antd";
+import {Button, Modal, Row, Col, Input, message} from "antd";
 import SelectX from "./SelectX";
 import emData from "../data/emData";
+import axios from "axios";
 
 class ButtonX extends React.PureComponent{
 
     state={
-        visible: false
+        visible: false,
+        bu: '',
+        scene: '',
+        eid: '',
+        name : '',
+        description: '',
+        salience : '',
+        content : ''
+
     }
 
     onClick = (e)=> {
@@ -15,9 +24,107 @@ class ButtonX extends React.PureComponent{
         })
     }
 
+    select = (eid) => {
+        this.setState({
+            eid: eid
+        })
+    }
+
+
     handleOk = (e) => {
+        console.log('handle ok -->', e)
+        //新增部门
+        if (this.props.id === 1){
+            this.addBu()
+        }
+
+        //新增场景
+        if (this.props.id === 2){
+            this.addScene()
+        }
+
+        //新增规则
+        if (this.props.id === 3){
+            this.addRule()
+        }
+    }
+
+    addBu = () => {
+        if (this.state.bu === '' || this.state.bu == null){
+            message.error('部门名称为空')
+            return
+        }
+
+        axios.get('/add/bu?name='+ this.state.bu)
+            .then(response =>{
+                if (response.status === 200) {
+                    message.success('添加部门成功,请刷新页面以加载.', 3)
+                    this.setState({
+                        visible: false
+                    })
+                }else {
+                    message.error('添加部门失败:'+ response.data, 3)
+                }
+            })
+            .catch(e => {
+                message.error('添加部门异常:'+ e, 3)
+            })
+    }
+
+    addScene = () => {
+        if (this.state.bu === '' || this.state.bu == null){
+            message.error('部门名称为空')
+            return
+        }
+
+        if (this.state.scene === '' || this.state.scene == null){
+            message.error('场景名称为空')
+            return
+        }
+
+        if (this.state.eid === '' || this.state.eid == null) {
+            message.error('没有选择执行模式')
+            return
+        }
+
+        axios.get('/add/scene?bu='+ this.state.bu + '&scene='+ this.state.scene + '&eid=' + this.state.eid)
+            .then(response =>{
+                if (response.status === 200) {
+                    message.success('添加场景成功,请刷新页面以加载.', 3)
+                    this.setState({
+                        visible: false
+                    })
+                }else {
+                    message.error('添加场景失败:'+ response.data, 3)
+                }
+            })
+            .catch(e => {
+                message.error('添加场景异常:'+ e, 3)
+            })
+
+    }
+
+
+    addRule = () => {
+        if (this.state.bu === '' || this.state.bu == null){
+            message.error('部门名称为空')
+            return
+        }
+
+        if (this.state.scene === '' || this.state.scene == null){
+            message.error('场景名称为空')
+            return
+        }
+
+        if (this.state.eid === '' || this.state.eid == null) {
+            message.error('没有选择执行模式')
+            return
+        }
+
         //todo
-        console.log('ok->', e)
+
+
+
     }
 
     handleCancel = (e) => {
@@ -42,7 +149,11 @@ class ButtonX extends React.PureComponent{
                     (
                         <Col>
                             <Row><span>请输入部门名称:</span></Row>
-                            <Row><Input bordered={true}/></Row>
+                            <Row><Input onChange={ e =>{
+                                this.setState({
+                                    bu: e.target.value
+                                })
+                            }} rules={[{ required: true, message: '请输入部门名称'}]} /></Row>
                         </Col>
                     )
                     : (
@@ -50,9 +161,18 @@ class ButtonX extends React.PureComponent{
                         (
                             <Col>
                                 <Row><span>请输入部门名称:</span></Row>
-                                <Row><Input bordered={true}/></Row>
+                                <Row><Input onChange={ e =>{
+                                    this.setState({
+                                        bu: e.target.value
+                                    })
+                                }}/></Row>
+
                                 <Row><span style={{marginTop: 10}}>请输入场景名称:</span></Row>
-                                <Row><Input placeholder={'请输入场景名称'}/></Row>
+                                <Row><Input placeholder='请输入场景名称' onChange={ e =>{
+                                    this.setState({
+                                        scene: e.target.value
+                                    })
+                                }}/></Row>
                                 <Row style={{marginTop: 10}}>
                                     <SelectX
                                         spanText='执行模式:'
