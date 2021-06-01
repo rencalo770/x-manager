@@ -3,6 +3,7 @@ import {Button, Modal, Row, Col, Input, message} from "antd";
 import SelectX from "./SelectX";
 import emData from "../data/emData";
 import axios from "axios";
+import isNumeric from "antd/es/_util/isNumeric";
 
 class ButtonX extends React.PureComponent{
 
@@ -55,19 +56,24 @@ class ButtonX extends React.PureComponent{
             return
         }
 
-        axios.get('/add/bu?name='+ this.state.bu)
+        axios.get('/add/bu?bu='+ this.state.bu)
             .then(response =>{
                 if (response.status === 200) {
-                    message.success('添加部门成功,请刷新页面以加载.', 3)
-                    this.setState({
-                        visible: false
-                    })
+                    if (response.data.code === 0){
+                        message.success('创建部门成功,请刷新页面以加载.', 3)
+                        this.setState({
+                            visible: false,
+                            bu : ''
+                        })
+                    }else {
+                        message.error('创建部门失败:'+ response.data.code, 3)
+                    }
                 }else {
-                    message.error('添加部门失败:'+ response.data, 3)
+                    message.error('创建部门失败:'+ response.status, 3)
                 }
             })
             .catch(e => {
-                message.error('添加部门异常:'+ e, 3)
+                message.error('创建部门异常:'+ e, 3)
             })
     }
 
@@ -90,12 +96,19 @@ class ButtonX extends React.PureComponent{
         axios.get('/add/scene?bu='+ this.state.bu + '&scene='+ this.state.scene + '&eid=' + this.state.eid)
             .then(response =>{
                 if (response.status === 200) {
-                    message.success('添加场景成功,请刷新页面以加载.', 3)
-                    this.setState({
-                        visible: false
-                    })
+                    if (response.data.code === 0) {
+                        message.success('添加场景成功,请刷新页面以加载.', 3)
+                        this.setState({
+                            visible: false,
+                            bu : '',
+                            scene: '',
+                            eid: ''
+                        })
+                    }else {
+                        message.error('添加场景失败:'+ response.data.message, 3)
+                    }
                 }else {
-                    message.error('添加场景失败:'+ response.data, 3)
+                    message.error('添加场景失败:'+ response.status, 3)
                 }
             })
             .catch(e => {
@@ -106,24 +119,65 @@ class ButtonX extends React.PureComponent{
 
 
     addRule = () => {
-        if (this.state.bu === '' || this.state.bu == null){
-            message.error('部门名称为空')
+        if (this.state.bu === '' || this.state.bu == null || this.state.bu.trim() === ''){
+            message.error('部门名称为空',3)
             return
         }
 
-        if (this.state.scene === '' || this.state.scene == null){
-            message.error('场景名称为空')
+        if (this.state.scene === '' || this.state.scene == null || this.state.scene.trim() === ''){
+            message.error('场景名称为空', 3)
             return
         }
 
-        if (this.state.eid === '' || this.state.eid == null) {
-            message.error('没有选择执行模式')
+        if (this.state.name === '' || this.state.name == null || this.state.name.trim() === ''){
+            message.error('规则名称为空', 3)
             return
         }
 
-        //todo
+        if (this.state.description === '' || this.state.description == null|| this.state.description.trim() === ''){
+            message.error('规则描述为空',3)
+            return
+        }
 
+        if (this.state.salience === '' || this.state.salience == null || this.state.salience.trim() === '' || !isNumeric(this.state.salience) || !(this.state.salience%1 === 0) ){
+            message.error('规则优先级必须为整数:'+this.state.salience, 3)
+            return
+        }
 
+        if (this.state.content === '' || this.state.content == null || this.state.content.trim() === ''){
+            message.error('规则体为空', 3)
+            return
+        }
+
+        axios.post('/add/rule',
+            {'bu': this.state.bu,
+                'scene': this.state.scene,
+                'name': this.state.name,
+                'description': this.state.description,
+                'salience': this.state.salience,
+                'content': this.state.content})
+            .then(response => {
+                if (response.status === 200 ){
+                    if (response.data.code === 0) {
+                        message.success('创建规则成功,刷新以重新加载!', 3)
+                        this.setState({
+                            bu:'',
+                            scene: '',
+                            name:'',
+                            description: '',
+                            salience:'',
+                            content:''
+                        })
+                    }else{
+                        message.error('创建规则失败:'+response.data.message, 3)
+                    }
+                }else{
+                    message.error('创建规则失败:'+response.status, 3)
+                }
+            })
+            .catch(e => {
+                message.error('创建规则异常:'+e, 3)
+            })
 
     }
 
@@ -153,7 +207,7 @@ class ButtonX extends React.PureComponent{
                                 this.setState({
                                     bu: e.target.value
                                 })
-                            }} rules={[{ required: true, message: '请输入部门名称'}]} /></Row>
+                            }} value={this.state.bu} /></Row>
                         </Col>
                     )
                     : (
@@ -161,25 +215,27 @@ class ButtonX extends React.PureComponent{
                         (
                             <Col>
                                 <Row><span>请输入部门名称:</span></Row>
-                                <Row><Input onChange={ e =>{
+                                <Row><Input placeholder='请输入部门名称'  onChange={ e =>{
                                     this.setState({
                                         bu: e.target.value
                                     })
-                                }}/></Row>
+                                }} value={this.state.bu}/></Row>
 
                                 <Row><span style={{marginTop: 10}}>请输入场景名称:</span></Row>
                                 <Row><Input placeholder='请输入场景名称' onChange={ e =>{
                                     this.setState({
                                         scene: e.target.value
                                     })
-                                }}/></Row>
+                                }} value={this.state.scene}/></Row>
                                 <Row style={{marginTop: 10}}>
                                     <SelectX
                                         spanText='执行模式:'
                                         placeholder='请选择执行模式'
                                         onSelected={this.select}
                                         selectOption={emData}
-                                        disabled={false}/>
+                                        disabled={false}
+                                        value = {this.state.eid}
+                                    />
                                 </Row>
                             </Col>
                         ) : (
