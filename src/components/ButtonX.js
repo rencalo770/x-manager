@@ -166,7 +166,8 @@ class ButtonX extends React.PureComponent{
                             name:'',
                             description: '',
                             salience:'',
-                            content:''
+                            content:'',
+                            visible: false
                         })
                     }else{
                         message.error('创建规则失败:'+response.data.message, 3)

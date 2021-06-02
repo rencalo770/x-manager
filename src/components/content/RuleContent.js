@@ -218,21 +218,31 @@ class RuleContent extends React.Component{
             return
         }
 
+        //console.log( 'bu->scene->', this.state.buValue, this.state.sceneValue)
         //保存规则
-        axios.get('/update/rule?name=' + this.state.name
-            + '&description=' + this.state.description
-            + '&salience=' + this.state.salience
-            + '&content=' + this.state.content)
+        axios.post('/update/rule', {
+            'bid': this.state.buValue,
+            'sid': this.state.sceneValue,
+            'username': token.getUsername(),
+            'name': this.state.name,
+            'description': this.state.description,
+            'salience': this.state.salience,
+            'content': this.state.content})
             .then(response => {
                 if (response.status === 200) {
-                    message.success('规则保存成功!')
-                    this.setState({
-                        changeVisible: false
-                    })
+                    if (response.data.code === 0){
+                        message.success('规则更新成功,刷新以重新加载!', 3)
+                        this.setState({
+                            changeVisible: false
+                        })
+                    }else {
+                        message.error('规则更新失败!'+response.data.message, 3)
+                    }
+
                 }
             })
             .catch(e => {
-                message.error('更新规则失败:' + e)
+                message.error('更新规则异常:' + e, 3)
             })
     }
 
@@ -374,19 +384,28 @@ class RuleContent extends React.Component{
                                                                afterRules.push(rules[i])
                                                            }
 
-                                                           axios.get('/change/status?name=' + record.name + '&status='+(text === '下线'? 0 : 1))
+                                                           axios.post('/change/status',{
+                                                               'name': record.name,
+                                                               'status': (text === '下线'? 0 : 1),
+                                                               'bid': this.state.buValue,
+                                                               'sid': this.state.sceneValue
+                                                           })
                                                                .then(response =>{
                                                                    if (response.status === 200){
-                                                                       message.success(text==='下线'? '下线成功': '上线成功')
-                                                                       this.setState({
-                                                                           rules: afterRules
-                                                                       })
+                                                                       if (response.data.code === 0){
+                                                                           message.success(text==='下线'? '下线成功': '上线成功', 3)
+                                                                           this.setState({
+                                                                               rules: afterRules
+                                                                           })
+                                                                       } else {
+                                                                           message.error("更新规则失败:" + response.data.message, 3)
+                                                                       }
                                                                    }else {
                                                                        message.error(text==='下线'? '下线失败:'+ response.status : '上线失败:'+ response.status)
                                                                    }
                                                                })
                                                                .catch(e=> {
-                                                                   message.error(text==='下线'? '下线异常:'+ e: '上线异常:'+e)
+                                                                   message.error(text==='下线'? '下线异常:'+ e: '上线异常:'+e, 3)
                                                                })
                                                        }
                                                    }}>{text}</Button>
