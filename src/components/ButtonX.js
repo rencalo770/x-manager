@@ -4,6 +4,7 @@ import SelectX from "./SelectX";
 import emData from "../data/emData";
 import axios from "axios";
 import isNumeric from "antd/es/_util/isNumeric";
+import {SUCCESS} from "../data/Contant";
 
 class ButtonX extends React.PureComponent{
 
@@ -59,7 +60,7 @@ class ButtonX extends React.PureComponent{
         axios.get('/add/bu?bu='+ this.state.bu)
             .then(response =>{
                 if (response.status === 200) {
-                    if (response.data.code === 0){
+                    if (response.data.code === SUCCESS){
                         message.success('创建部门成功,请刷新页面以加载.', 3)
                         this.setState({
                             visible: false,
@@ -96,7 +97,7 @@ class ButtonX extends React.PureComponent{
         axios.get('/add/scene?bu='+ this.state.bu + '&scene='+ this.state.scene + '&eid=' + this.state.eid)
             .then(response =>{
                 if (response.status === 200) {
-                    if (response.data.code === 0) {
+                    if (response.data.code === SUCCESS) {
                         message.success('添加场景成功,请刷新页面以加载.', 3)
                         this.setState({
                             visible: false,
@@ -158,7 +159,7 @@ class ButtonX extends React.PureComponent{
                 'content': this.state.content})
             .then(response => {
                 if (response.status === 200 ){
-                    if (response.data.code === 0) {
+                    if (response.data.code === SUCCESS) {
                         message.success('创建规则成功,刷新以重新加载!', 3)
                         this.setState({
                             bu:'',

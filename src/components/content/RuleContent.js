@@ -10,6 +10,7 @@ import {Redirect} from "react-router-dom";
 import '../auth/Token'
 import Token from "../auth/Token";
 import isNumeric from "antd/es/_util/isNumeric";
+import {SUCCESS} from "../../data/Contant";
 const {Content} = Layout
 
 const { Column } = Table;
@@ -41,14 +42,18 @@ class RuleContent extends React.Component{
         axios.get('/bu')
             .then(response=>{
             if (response.status === 200){
-                this.setState({
-                    buOption: response.data
-                })
+                if (response.data.code === SUCCESS){
+                    this.setState({
+                        buOption: response.data.data
+                    })
+                }else {
+                    message.error("获取部门信息失败:"+ response.data.message, 3)
+                }
             } else {
-                message.error('获取部门信息失败:', response.data)
+                message.error('获取部门信息失败:'+ response.status, 3)
             }
         }).catch(e =>{
-            message.error('获取部门信息异常:',e)
+            message.error('获取部门信息异常:'+e, 3)
         })
     }
 
@@ -57,15 +62,19 @@ class RuleContent extends React.Component{
         axios.get('/scenes?bid='+bid)
             .then(response =>{
                 if (response.status === 200){
-                    this.setState({
-                        scenesOption: response.data
-                    })
+                    if (response.data.code === SUCCESS){
+                        this.setState({
+                            scenesOption: response.data.data
+                        })
+                    }else {
+                        message.error("获取场景失败:"+ response.data.message, 3)
+                    }
                 }else{
-                    message.error('获取部门场景信息失败:', response.data)
+                    message.error('获取部门的场景信息失败:'+ response.status, 3)
                 }
             })
             .catch(e=>{
-                message.error('获取场景信息异常:',e)
+                message.error('获取场景信息异常:'+ e, 3)
             })
     }
 
@@ -100,32 +109,41 @@ class RuleContent extends React.Component{
         axios.get('/rules?bid='+ bid +'&sid='+sid + '&status='+status)
             .then(response=>{
                 if (response.status === 200){
-                    //补全数据
-                    let respRules = []
-                    for (let i = 0; i < response.data.length; i ++ ){
-                        let rule = response.data[i]
-                        if( status === 1 ) {
-                            rule['operate'] = ['查看', '修改', '下线']
-                        }else {
-                            rule['operate'] = ['查看', '修改', '上线']
+
+                    console.log(" response.data.data--->", response.data.data)
+                    //if(response.data.code === SUCCESS){
+                        //补全数据
+                        let respRules = []
+                        if (response.data.data != null){
+                            for (let i = 0; i < response.data.data.length; i ++ ){
+                                let rule = response.data.data[i]
+                                if( status === 1 ) {
+                                    rule['operate'] = ['查看', '修改', '下线']
+                                }else {
+                                    rule['operate'] = ['查看', '修改', '上线']
+                                }
+
+                                rule['key'] = response.data.data[i].id
+                                respRules[i] = rule
+                            }
                         }
 
-                        rule['key'] = response.data[i].id
-                        respRules[i] = rule
-                    }
+                        this.setState({
+                            emValue:   emHelper.getSceneExecuteModelId(sid, this.state.scenesOption),
+                            emDisabled: false,
+                            rules: respRules,
+                            switchDisabled: false
+                        })
+                    /*}else {
+                        message.error('获取规则列表失败:'+ response.data.message, 3)
+                    }*/
 
-                    this.setState({
-                        emValue:   emHelper.getSceneExecuteModelId(sid, this.state.scenesOption),
-                        emDisabled: false,
-                        rules: respRules,
-                        switchDisabled: false
-                    })
                 }else {
-                    message.error('获取规则列表失败:', response.data)
+                    message.error('获取规则列表失败:'+ response.status, 3)
                 }
             })
             .catch(e=>{
-                message.error('获取规则列表异常:', e)
+                message.error('获取规则列表异常:'+e, 3)
             })
     }
 
@@ -141,19 +159,28 @@ class RuleContent extends React.Component{
 
     //切换(某部的某场景下的规则执行模式)执行模式
     emOnSelect = (value, event) =>{
+        if (event.value === this.state.emValue || event.children === this.state.emValue){
+            //选择和之前一致的
+            return
+        }
+
         axios.get('/change/em?bid='+ this.state.buValue +'&id=' + this.state.sceneValue + '&eid=' + event.value)
             .then(response => {
                 if (response.status === 200){
-                    message.success('改变场景的执行模式成功!')
-                    this.setState({
-                        emValue : event.children
-                    })
+                    if (response.data.code === SUCCESS){
+                        message.success('改变场景的执行模式成功!')
+                        this.setState({
+                            emValue : event.children
+                        })
+                    }else {
+                        message.error('改变场景执行模式失败:'+response.data.message, 3)
+                    }
                 }else{
-                    message.error('改变场景执行模式失败:', response.data)
+                    message.error('改变场景执行模式失败:'+response.status, 3)
                 }
             })
             .catch(e =>{
-                message.error('改变执行模式异常:', e)
+                message.error('改变执行模式异常:'+ e, 3)
             })
     }
 
@@ -203,7 +230,7 @@ class RuleContent extends React.Component{
 
     modalChangeOk = (e) => {
         if (this.state.description === '' || this.state.description === null  || this.state.description.trim() === ''){
-            message.error('描述不能为空!')
+            message.error('描述不能为空!', 3)
             return
         }
 
@@ -214,7 +241,7 @@ class RuleContent extends React.Component{
         }
 
         if (this.state.content === '' || this.state.content === null  || this.state.content.trim === ''){
-            message.error('规则体不能为空!')
+            message.error('规则体不能为空!', 3)
             return
         }
 
@@ -230,7 +257,7 @@ class RuleContent extends React.Component{
             'content': this.state.content})
             .then(response => {
                 if (response.status === 200) {
-                    if (response.data.code === 0){
+                    if (response.data.code === SUCCESS){
                         message.success('规则更新成功,刷新以重新加载!', 3)
                         this.setState({
                             changeVisible: false
@@ -238,7 +265,8 @@ class RuleContent extends React.Component{
                     }else {
                         message.error('规则更新失败!'+response.data.message, 3)
                     }
-
+                }else {
+                    message.error('规则更新失败!'+response.status, 3)
                 }
             })
             .catch(e => {
@@ -392,7 +420,7 @@ class RuleContent extends React.Component{
                                                            })
                                                                .then(response =>{
                                                                    if (response.status === 200){
-                                                                       if (response.data.code === 0){
+                                                                       if (response.data.code === SUCCESS){
                                                                            message.success(text==='下线'? '下线成功': '上线成功', 3)
                                                                            this.setState({
                                                                                rules: afterRules
