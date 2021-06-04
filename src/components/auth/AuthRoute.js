@@ -3,10 +3,8 @@ import {
     Route,
     Redirect,
 } from "react-router-dom";
+import token from "./Token";
 
-import Token from './Token';
-
-const token = new Token();
 
 const AuthRoute = ({ component: Component, ...rest }) => (
 

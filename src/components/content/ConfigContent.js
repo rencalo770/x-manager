@@ -1,11 +1,10 @@
 import React from "react";
 import {Layout} from 'antd';
 import {Redirect} from "react-router-dom";
-import Token from "../auth/Token";
+import token from "../auth/Token";
 
 const {Content} = Layout
 
-const token = new Token()
 
 class ConfigContent extends React.Component{
 

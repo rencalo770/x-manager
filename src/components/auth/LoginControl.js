@@ -1,8 +1,6 @@
 import React from "react";
 import {withRouter} from "react-router-dom";
-import Token from "./Token";
-
-const token = new Token();
+import token from "./Token";
 
 const AuthCon = withRouter(
     ({ history }) =>

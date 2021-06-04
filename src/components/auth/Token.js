@@ -1,6 +1,6 @@
 
 //based on localStorage
-class Token {
+class AppToken {
 
     setToken = (username, token) =>{
         localStorage.setItem('x_manager_username', username);
@@ -25,5 +25,6 @@ class Token {
 
 }
 
+const token = new AppToken()
 
-export default Token
+export default token

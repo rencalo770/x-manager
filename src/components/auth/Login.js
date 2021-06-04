@@ -1,12 +1,13 @@
 import React from "react";
 import { Input, Layout, Form, Button, Row, Col, message} from 'antd';
 import './Token'
-import Token from "./Token";
 import axios from "axios";
 import {UserOutlined, LockOutlined} from "@ant-design/icons";
 import {Redirect } from "react-router-dom";
+import {SUCCESS} from "../../data/Contant";
+import token from "./Token";
 
-const  token = new Token()
+
 const {Content} = Layout
 
 
@@ -24,19 +25,20 @@ class Login extends React.PureComponent{
         axios.post(`/user/login`, {'username': e.username, 'password': e.password})
             .then(res =>{
                 if(res.status === 200){
-                    if (res.data.isSuccess) {
+                    if (res.data.code === SUCCESS){
                         //登陆成功，设置username和token
                         token.setToken(res.data.data.username, res.data.data.token)
                         this.setState({ redirectToReferrer: true });
-                    } else {
-                        message.error("用户名或密码错误!")
+                        message.success("登陆成功!", 2)
+                    }else {
+                        message.error("用户名或密码错误!",3)
                     }
                 }else {
-                    message.error("用户名或密码错误!")
+                    message.error("服务异常:" + res.status, 3)
                 }
             })
             .catch(e => {
-                message.error("登陆异常:", e)
+                message.error("登陆异常:"+ e, 3)
             });
     }
 

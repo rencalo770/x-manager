@@ -1,21 +1,19 @@
 import React from "react";
 import {Layout, Divider, Switch, Row, Col, message, Table, Button, Modal, Input,} from 'antd';
 import SelectX from "../SelectX";
-//import TableX from "../TableX";
 import axios from "axios";
 import emData from "../../data/emData";
 import emHelper from "../../data/emHelper";
 import ButtonX from "../ButtonX";
 import {Redirect} from "react-router-dom";
 import '../auth/Token'
-import Token from "../auth/Token";
 import isNumeric from "antd/es/_util/isNumeric";
 import {SUCCESS} from "../../data/Contant";
+import token from "../auth/Token";
 const {Content} = Layout
 
 const { Column } = Table;
 
-const token = new Token()
 
 // eslint-disable-next-line no-extend-native
 Date.prototype.Format = function (fmt) {
@@ -36,6 +34,76 @@ Date.prototype.Format = function (fmt) {
 
 
 class RuleContent extends React.Component{
+
+    constructor(props) {
+        super(props);
+
+
+        setInterval(()=>{
+
+            //内部刷新获取部门信息
+            axios.get('/bu')
+                .then(response=>{
+                    if (response.status === 200){
+                        if (response.data.code === SUCCESS){
+                            this.setState({
+                                buOption: response.data.data
+                            })
+                        }
+                    }
+                })
+
+            if (this.state.buValue !== '' && this.state.buValue != null){
+
+                axios.get('/scenes?bid='+this.state.buValue)
+                    .then(response =>{
+                        if (response.status === 200){
+                            if (response.data.code === SUCCESS){
+                                this.setState({
+                                    scenesOption: response.data.data
+                                })
+                            }
+                        }
+                    })
+            }
+
+            //内部刷新场景信息
+            if (this.state.buValue !== '' && this.state.buValue != null && this.state.sceneValue !== '' && this.state.sceneValue != null){
+                let bid = this.state.buValue
+                let sid = this.state.sceneValue
+                let status = this.state.checked ? 1: 0 //1:在线,0:离线
+                axios.get('/rules?bid='+ bid +'&sid='+sid + '&status='+status)
+                    .then(response=>{
+                        if (response.status === 200){
+                            //补全数据
+                            let respRules = []
+                            if (response.data.data != null){
+                                for (let i = 0; i < response.data.data.length; i ++ ){
+                                    let rule = response.data.data[i]
+                                    if( status === 1 ) {
+                                        rule['operate'] = ['查看', '修改', '下线']
+                                    }else {
+                                        rule['operate'] = ['查看', '修改', '上线']
+                                    }
+
+                                    rule['key'] = response.data.data[i].id
+                                    respRules[i] = rule
+                                }
+                            }
+
+                            this.setState({
+                                //emValue:   emHelper.getSceneExecuteModelId(sid, this.state.scenesOption),
+                                //emDisabled: false,
+                                rules: respRules,
+                                //switchDisabled: false
+                            })
+                        }
+                    })
+            }
+
+        }, 5000)
+
+    }
 
     //获取部门信息
     componentDidMount() {
@@ -80,7 +148,7 @@ class RuleContent extends React.Component{
 
     //选择具体的部门
     buOnSelected = (value, event) =>{
-        // 基于具体的部门去获取"场景",在具体的业务场景中修改下面的逻辑即可
+
         if (this.state.buValue === value){
             //此处确保新增场景后，可以拿到最新的场景信息，但不应该切换部门信息
             this.getSceneData(value);
@@ -109,34 +177,28 @@ class RuleContent extends React.Component{
         axios.get('/rules?bid='+ bid +'&sid='+sid + '&status='+status)
             .then(response=>{
                 if (response.status === 200){
-
-                    console.log(" response.data.data--->", response.data.data)
-                    //if(response.data.code === SUCCESS){
-                        //补全数据
-                        let respRules = []
-                        if (response.data.data != null){
-                            for (let i = 0; i < response.data.data.length; i ++ ){
-                                let rule = response.data.data[i]
-                                if( status === 1 ) {
-                                    rule['operate'] = ['查看', '修改', '下线']
-                                }else {
-                                    rule['operate'] = ['查看', '修改', '上线']
-                                }
-
-                                rule['key'] = response.data.data[i].id
-                                respRules[i] = rule
+                    //补全数据
+                    let respRules = []
+                    if (response.data.data != null){
+                        for (let i = 0; i < response.data.data.length; i ++ ){
+                            let rule = response.data.data[i]
+                            if( status === 1 ) {
+                                rule['operate'] = ['查看', '修改', '下线']
+                            }else {
+                                rule['operate'] = ['查看', '修改', '上线']
                             }
-                        }
 
-                        this.setState({
-                            emValue:   emHelper.getSceneExecuteModelId(sid, this.state.scenesOption),
-                            emDisabled: false,
-                            rules: respRules,
-                            switchDisabled: false
-                        })
-                    /*}else {
-                        message.error('获取规则列表失败:'+ response.data.message, 3)
-                    }*/
+                            rule['key'] = response.data.data[i].id
+                            respRules[i] = rule
+                        }
+                    }
+
+                    this.setState({
+                        emValue:   emHelper.getSceneExecuteModelId(sid, this.state.scenesOption),
+                        emDisabled: false,
+                        rules: respRules,
+                        switchDisabled: false
+                    })
 
                 }else {
                     message.error('获取规则列表失败:'+ response.status, 3)
@@ -184,7 +246,6 @@ class RuleContent extends React.Component{
             })
     }
 
-    // todo 切换分类
     onChange  = (e)=>{
         this.getFixedStatusRules(this.state.buValue, this.state.sceneValue, e)
 
@@ -245,7 +306,6 @@ class RuleContent extends React.Component{
             return
         }
 
-        //console.log( 'bu->scene->', this.state.buValue, this.state.sceneValue)
         //保存规则
         axios.post('/update/rule', {
             'bid': this.state.buValue,
@@ -258,7 +318,7 @@ class RuleContent extends React.Component{
             .then(response => {
                 if (response.status === 200) {
                     if (response.data.code === SUCCESS){
-                        message.success('规则更新成功,刷新以重新加载!', 3)
+                        message.success('规则更新成功', 3)
                         this.setState({
                             changeVisible: false
                         })
@@ -388,6 +448,9 @@ class RuleContent extends React.Component{
                                                        if (text === '查看') {
                                                            this.setState({
                                                                watchVisible: true,
+                                                               name: record.name,
+                                                               description: record.description,
+                                                               salience: record.salience,
                                                                watchContent: record.content,
                                                            })
                                                        }
@@ -413,6 +476,7 @@ class RuleContent extends React.Component{
                                                            }
 
                                                            axios.post('/change/status',{
+                                                               'username': token.getUsername(),
                                                                'name': record.name,
                                                                'status': (text === '下线'? 0 : 1),
                                                                'bid': this.state.buValue,
@@ -445,8 +509,40 @@ class RuleContent extends React.Component{
                         title='规则内容'
                         visible={this.state.watchVisible}
                         onCancel={this.watchCancel}
-                        footer ={null}>
-                        {<Input.TextArea autoSize={true} readOnly={true} value={this.state.watchContent}/>}
+                        style={{minWidth: 750, minHeight: 600 }}
+                        footer ={null}
+                    >
+                        <Row>
+                            <Col>
+                                <Row>
+                                    <span>规则名称:</span>
+                                </Row>
+                                <Row>
+                                    <Input readOnly={true} value={this.state.name}/>
+                                </Row>
+                                <Row>
+                                    <span style={{marginTop: 10}}>规则描述:</span>
+                                </Row>
+                                <Row>
+                                    <Input readOnly={true} value={this.state.description} />
+                                </Row>
+                                <Row>
+                                    <span style={{marginTop: 10}}>规则优先级:</span>
+                                </Row>
+                                <Row>
+                                    <Input readOnly={true} value={this.state.salience} />
+                                </Row>
+                            </Col>
+                            <Col style={{marginLeft: 10}}>
+                                <Row>
+                                    <span>规则体:</span>
+                                </Row>
+                                <Row>
+                                    <Input.TextArea  style={{minWidth:500, minHeight: 400}} readOnly={true} autoSize={true} value={this.state.watchContent}/>
+                                </Row>
+                            </Col>
+                        </Row>
+
                     </Modal>
                     <Modal
                         id ='修改'
@@ -458,47 +554,52 @@ class RuleContent extends React.Component{
                         onCancel={this.changeCancel}
                         width={600}
                         maskClosable={false}
+                        style={{minWidth: 750, minHeight: 600 }}
                     >
-                        <Col>
-                            <Row>
-                                <span>规则名称:</span>
-                            </Row>
-                            <Row>
-                                <Input readOnly={true} value={this.state.name}/>
-                            </Row>
-                            <Row>
-                                <span style={{marginTop: 10}}>规则描述:</span>
-                            </Row>
-                            <Row>
-                                <Input value={this.state.description}
-                                       onChange={(e) => {
-                                           console.log('onchange->',e.target.value)
-                                           this.setState({
-                                               description: e.target.value
-                                           })
-                                       }}/>
-                            </Row>
-                            <Row>
-                                <span style={{marginTop: 10}}>规则优先级:</span>
-                            </Row>
-                            <Row>
-                                <Input value={this.state.salience} onChange={e => {
-                                    this.setState({
-                                        salience: e.target.value
-                                    })
-                                }}/>
-                            </Row>
-                            <Row>
-                                <span style={{marginTop: 10}}>规则体:</span>
-                            </Row>
-                            <Row>
-                                <Input.TextArea  autoSize={true} value={this.state.content} onChange={e => {
-                                    this.setState({
-                                        content: e.target.value
-                                    })
-                                }}/>
-                            </Row>
-                        </Col>
+                        <Row>
+                            <Col>
+                                <Row>
+                                    <span>规则名称:</span>
+                                </Row>
+                                <Row>
+                                    <Input readOnly={true} value={this.state.name}/>
+                                </Row>
+                                <Row>
+                                    <span style={{marginTop: 10}}>规则描述:</span>
+                                </Row>
+                                <Row>
+                                    <Input value={this.state.description}
+                                           onChange={(e) => {
+                                               this.setState({
+                                                   description: e.target.value
+                                               })
+                                           }}/>
+                                </Row>
+                                <Row>
+                                    <span style={{marginTop: 10}}>规则优先级:</span>
+                                </Row>
+                                <Row>
+                                    <Input value={this.state.salience} onChange={e => {
+                                        this.setState({
+                                            salience: e.target.value
+                                        })
+                                    }}/>
+                                </Row>
+                            </Col>
+                            <Col style={{marginLeft: 10}}>
+                                <Row>
+                                    <span>规则体:</span>
+                                </Row>
+                                <Row>
+                                    <Input.TextArea  style={{minWidth:500, minHeight: 400}} value={this.state.content} onChange={e => {
+                                        this.setState({
+                                            content: e.target.value
+                                        })
+                                    }}/>
+                                </Row>
+                            </Col>
+                        </Row>
+
                     </Modal>
                 </div>
             </Content>

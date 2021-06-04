@@ -1,12 +1,11 @@
 import React from "react";
 import {Layout} from 'antd';
 import '../auth/Token'
-import Token from "../auth/Token";
 import {Redirect} from "react-router-dom";
+import token from "../auth/Token";
 
 const {Content} = Layout
 
-const token = new Token()
 
 class AuthContent extends React.Component{
 

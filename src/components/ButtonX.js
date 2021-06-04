@@ -5,6 +5,8 @@ import emData from "../data/emData";
 import axios from "axios";
 import isNumeric from "antd/es/_util/isNumeric";
 import {SUCCESS} from "../data/Contant";
+import token from "./auth/Token";
+
 
 class ButtonX extends React.PureComponent{
 
@@ -34,7 +36,6 @@ class ButtonX extends React.PureComponent{
 
 
     handleOk = (e) => {
-        console.log('handle ok -->', e)
         //新增部门
         if (this.props.id === 1){
             this.addBu()
@@ -61,7 +62,7 @@ class ButtonX extends React.PureComponent{
             .then(response =>{
                 if (response.status === 200) {
                     if (response.data.code === SUCCESS){
-                        message.success('创建部门成功,请刷新页面以加载.', 3)
+                        message.success('创建部门成功.', 3)
                         this.setState({
                             visible: false,
                             bu : ''
@@ -98,7 +99,7 @@ class ButtonX extends React.PureComponent{
             .then(response =>{
                 if (response.status === 200) {
                     if (response.data.code === SUCCESS) {
-                        message.success('添加场景成功,请刷新页面以加载.', 3)
+                        message.success('添加场景成功.', 3)
                         this.setState({
                             visible: false,
                             bu : '',
@@ -153,6 +154,7 @@ class ButtonX extends React.PureComponent{
         axios.post('/add/rule',
             {'bu': this.state.bu,
                 'scene': this.state.scene,
+                'username': token.getUsername(),
                 'name': this.state.name,
                 'description': this.state.description,
                 'salience': this.state.salience,
@@ -160,7 +162,7 @@ class ButtonX extends React.PureComponent{
             .then(response => {
                 if (response.status === 200 ){
                     if (response.data.code === SUCCESS) {
-                        message.success('创建规则成功,刷新以重新加载!', 3)
+                        message.success('创建规则成功!', 3)
                         this.setState({
                             bu:'',
                             scene: '',
@@ -198,8 +200,9 @@ class ButtonX extends React.PureComponent{
                        okText="保存"
                        cancelText="取消"
                        onOk={this.handleOk}
-                       onCancel={this.handleCancel}>
-
+                       onCancel={this.handleCancel}
+                       style={ this.props.id === 3 ? {minWidth:800} : {minWidth: 600}}
+                >
                 {
                     (this.props.id === 1 ) ?
                     (
@@ -241,6 +244,7 @@ class ButtonX extends React.PureComponent{
                                 </Row>
                             </Col>
                         ) : (
+                            <Row>
                                 <Col>
                                     <Row><span>请输入部门名称:</span></Row>
                                     <Row>
@@ -248,7 +252,7 @@ class ButtonX extends React.PureComponent{
                                             this.setState({
                                                 bu:e.target.value
                                             })
-                                        }}/>
+                                        }} value={this.state.bu}/>
                                     </Row>
                                     <Row><span style={{marginTop: 10}}>请输入场景名称:</span></Row>
                                     <Row>
@@ -256,7 +260,7 @@ class ButtonX extends React.PureComponent{
                                             this.setState({
                                                 scene: e.target.value
                                             })
-                                        }} />
+                                        }} value={this.state.scene} />
                                     </Row>
                                     <Row><span style={{marginTop: 10}}>请输入规则名称:</span></Row>
                                     <Row>
@@ -264,7 +268,7 @@ class ButtonX extends React.PureComponent{
                                             this.setState({
                                                 name: e.target.value
                                             })
-                                        }}/>
+                                        }} value={this.state.name}/>
                                     </Row>
                                     <Row><span style={{marginTop: 10}}>请输入规则描述:</span></Row>
                                     <Row>
@@ -272,7 +276,7 @@ class ButtonX extends React.PureComponent{
                                             this.setState({
                                                 description: e.target.value
                                             })
-                                        }}/>
+                                        }} value={this.state.description}/>
                                     </Row>
                                     <Row><span style={{marginTop: 10}}>请输入规则优先级:</span></Row>
                                     <Row>
@@ -280,17 +284,22 @@ class ButtonX extends React.PureComponent{
                                             this.setState({
                                                 salience: e.target.value
                                             })
-                                        }}/>
+                                        }} value={this.state.salience} />
                                     </Row>
-                                    <Row><span style={{marginTop: 10}}>请输入规则内容:</span></Row>
+
+                                </Col>
+                                <Col style={{marginLeft: 15}}>
+                                    <Row><span>请输入规则内容:</span></Row>
                                     <Row>
-                                        <Input.TextArea onChange={e=> {
+                                        <Input.TextArea style={{minHeight:450, minWidth: 550}} onChange={e=> {
                                             this.setState({
                                                 content: e.target.value
                                             })
-                                        }}/>
+                                        }} value={this.state.content}/>
                                     </Row>
+
                                 </Col>
+                            </Row>
                             )
                         )
                 }
