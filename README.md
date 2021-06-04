@@ -1,6 +1,6 @@
-# Getting Started with Create React App
+# Getting Started 
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+- xmanager是开源的规则管理系统前端
 
 ## Available Scripts
 
